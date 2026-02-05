@@ -5,6 +5,7 @@ int main(){
     printf("Boas Vindas ao SUMPLETE_GAME!!\n\n");
     
     //Chamadas de funções do menu
+    clearDisplay();
     showComands();
     menuOptions();
     

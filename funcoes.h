@@ -9,7 +9,9 @@
 #include <time.h>
 
 //Protótipos
+void charDown(char word[], char *c);
 void clearDisplay();
+void flush();
 void menuOptions();
 void showComands();
 

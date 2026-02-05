@@ -9,7 +9,8 @@
 #include <time.h>
 
 //Protótipos
-
+void clearDisplay();
+void menuOptions();
 void showComands();
 
 

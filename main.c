@@ -9,6 +9,6 @@ int main(){
     showComands();
     menuOptions();
     
-    
+    printf("Obrigado por jogar!!\n");
     return 0;
 }

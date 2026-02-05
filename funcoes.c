@@ -1,7 +1,7 @@
 //Pablo Henrique 25.2.4149
 #include "funcoes.h"
 
-
+//Mostra todos os comandos do menu inicial
 void showComands(){
     printf("\nComandos do jogo: \n");
     printf("ajuda: Exibe os comandos do jogo\n");
@@ -16,12 +16,12 @@ void showComands(){
     printf("remover <lin> <col>: remove a posição da soma\n\n");
 }
 
-
+//Limpa a tela
 void clearDisplay(){
     printf("\e[1;1H\e[2J");
 }
 
-
+//Transforma as letras em minúsculas
 void charDown(char word[], char *c){
     if (word != NULL){
         for (int i=0;i<strlen(word);i++)
@@ -39,7 +39,7 @@ void flush(){
     while ((c = getchar()) != '\n' && c != EOF);
 }
 
-
+//O usuário escolhe qual será a opção de dificuldade
 int difficultyOptions(){
     int i=0;
     char optionDifficulty;
@@ -49,13 +49,14 @@ int difficultyOptions(){
         scanf("%c", &optionDifficulty);
         flush();
         charDown(NULL , &optionDifficulty);
-        if (optionDifficulty == 'x'){
+        if (optionDifficulty == 'x')
             i = -1;
-            break;
-        }
-        else if (optionDifficulty == 'f');
-        else if (optionDifficulty == 'm');
-        else if (optionDifficulty == 'd');
+        else if (optionDifficulty == 'f')
+            i = 1;
+        else if (optionDifficulty == 'm')
+            i = 2;
+        else if (optionDifficulty == 'd')
+            i = 3;
         else{
             clearDisplay();
             printf("Erro: comando incompatível, tente novamente\n");
@@ -65,18 +66,49 @@ int difficultyOptions(){
     return i;
 }
 
+//Cria a matriz e o vetor com as dicas de acordo com a dificuldade selecionada pelo usuário
+Num *createMatrix(int optionDifficulty, int **tips){
+    Num **matrix;
+    tips = malloc ((optionDifficulty*2) * sizeof(int));
+    matrix = malloc (optionDifficulty * sizeof(Num*));
+    for (int i=0;i<optionDifficulty;i++)
+        matrix[i] = malloc (optionDifficulty * sizeof(Num));
+}
+
+//Preenche a matriz com números aleatórios, as respectivas posições
+void fillMatrix(Num **matrix, int tam){
+    srand(time(NULL));
+    for (int i=0;i<tam;i++){
+        for (int j=0;j<tam;j++){
+            matrix[i][j].number = rand() % 10;
+            matrix[i][j].sum = rand() % 2;
+            matrix[i][j].x = i;
+            matrix[i][j].y = j;
+            printf("[%d..%d] ", matrix[i][j].number, matrix[i][j].sum);
+        }
+        printf("\n");
+    }
+}
+
+//Cria um nojo jogo, gerando, organizando e modificando a interface
 void newGame(){
     int i = 0, option = difficultyOptions();
+    Num *matrix;
+    int *tips;
     while (i == 0){
         if (option == -1){
             i = -1;
             clearDisplay();
             showComands();
+        } else if (option == 1){
+            matrix = createMatrix(TAM_F, &tips);
+            fillMatrix(&matrix, TAM_F);
+            i = -1;
+        } else if (option == 2)
+            matrix = createMatrix(TAM_M, &tips);
+        else {
+            matrix = createMatrix(TAM_D, &tips);
         }
-        else if (option == 1);
-        else if (option == 2);
-        else if (option == 3);
-        
     }
 }
 
@@ -118,6 +150,8 @@ Sumario:
 5 - Mostrar comandos do jogo
 20 - Limpar tela
 25 - Caracteres minúsculos
- - Menu de opções
+37 - Limpar buffer
+43 - Escolher dificuldade
+- Menu de opções
 */
 

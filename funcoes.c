@@ -108,19 +108,33 @@ void tips(int **tip, Num **matrix, int tam){
 //Mostra a interface do jogo
 void gameInterface(int tip[], Num **matrix, int tam){
     clearDisplay();
-    printf("  |");
+    printf("    \u2503");
+    //Canto de cima
     for (int i=0;i<tam;i++)
-        printf("%2d|", (i+1));
-    printf("\n");
+        printf(" %2d  \u2503", (i+1));
+
+    //Meio
     for (int i=0;i<tam;i++){
-        printf("%2d|", (i+1));
-        for (int j=0;j<tam;j++)
-            printf("%2d|", matrix[i][j].number);
-        printf("%2d\n", tip[i]);
+        printf("\n");
+        printf("\u2501\u2501\u2501\u2501");
+        for (int j=0;j<tam+1;j++){
+            printf("\u254b");
+            for (int k=0;k<5;k++)
+                printf("\u2501");
+        }
+        printf("\n%2d  ", i+1);
+        for (int j=0;j<tam+1;j++)
+            printf("\u2503 %2d  ", matrix[i][j].number);
     }
-    printf("  |");
+    printf("\n\u2501\u2501\u2501\u2501");
+    for (int j=0;j<tam+1;j++){
+        printf("\u254b");
+        for (int k=0;k<5;k++)
+            printf("\u2501");
+    }
+    printf("\n    \u2503");
     for (int i=0;i<tam;i++)
-        printf("%2d|", tip[i+tam]);
+        printf(" %2d  \u2503", tip[i+tam]);
     printf("\n");
 }
 //Cria um nojo jogo, gerando, organizando e modificando a interface

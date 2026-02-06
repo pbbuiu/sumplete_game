@@ -22,8 +22,10 @@ typedef struct {
 #define TAM_D 7
 
 //Protótipos
+void gameInterface(int tip[], Num **matrix, int tam);
+void tips(int **tip, Num **matrix, int tam);
 void fillMatrix(Num **matrix, int tam);
-Num *createMatrix(int optionDifficulty, int **tips);
+Num **createMatrix(int optionDifficulty);
 void charDown(char word[], char *c);
 void clearDisplay();
 void flush();

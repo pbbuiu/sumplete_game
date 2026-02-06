@@ -67,48 +67,86 @@ int difficultyOptions(){
 }
 
 //Cria a matriz e o vetor com as dicas de acordo com a dificuldade selecionada pelo usuário
-Num *createMatrix(int optionDifficulty, int **tips){
+Num **createMatrix(int optionDifficulty){
     Num **matrix;
-    tips = malloc ((optionDifficulty*2) * sizeof(int));
     matrix = malloc (optionDifficulty * sizeof(Num*));
     for (int i=0;i<optionDifficulty;i++)
         matrix[i] = malloc (optionDifficulty * sizeof(Num));
-}
+    fillMatrix(matrix, optionDifficulty);
+    return matrix;
+}    
 
 //Preenche a matriz com números aleatórios, as respectivas posições
 void fillMatrix(Num **matrix, int tam){
-    srand(time(NULL));
-    for (int i=0;i<tam;i++){
+    srand (time(NULL));
+    for (int i=0;i<tam;i++)
         for (int j=0;j<tam;j++){
             matrix[i][j].number = rand() % 10;
             matrix[i][j].sum = rand() % 2;
             matrix[i][j].x = i;
             matrix[i][j].y = j;
-            printf("[%d..%d] ", matrix[i][j].number, matrix[i][j].sum);
         }
-        printf("\n");
+}
+
+//Cria as dicas com base nos numeros que estão na tabela
+void tips(int **tip, Num **matrix, int tam){
+    *tip = malloc ((tam*2) * sizeof(int));
+    for (int i=0;i<tam;i++){
+        for (int j=0;j<tam;j++)
+            if (matrix[i][j].sum == 1)
+                (*tip)[i] += matrix[i][j].number;
+        //printf("%d \n", (*tip)[i]);
+    }
+    for (int i=0;i<tam;i++){
+        for (int j=0;j<tam;j++)
+            if (matrix[j][i].sum == 1)
+                (*tip)[i+tam] += matrix[j][i].number;
+        //printf("%d \n", (*tip)[i+tam]);
     }
 }
 
+//Mostra a interface do jogo
+void gameInterface(int tip[], Num **matrix, int tam){
+    clearDisplay();
+    printf("  |");
+    for (int i=0;i<tam;i++)
+        printf("%2d|", (i+1));
+    printf("\n");
+    for (int i=0;i<tam;i++){
+        printf("%2d|", (i+1));
+        for (int j=0;j<tam;j++)
+            printf("%2d|", matrix[i][j].number);
+        printf("%2d\n", tip[i]);
+    }
+    printf("  |");
+    for (int i=0;i<tam;i++)
+        printf("%2d|", tip[i+tam]);
+    printf("\n");
+}
 //Cria um nojo jogo, gerando, organizando e modificando a interface
 void newGame(){
     int i = 0, option = difficultyOptions();
-    Num *matrix;
-    int *tips;
+    Num **matrix;
+    int *tip;
     while (i == 0){
         if (option == -1){
-            i = -1;
             clearDisplay();
             showComands();
         } else if (option == 1){
-            matrix = createMatrix(TAM_F, &tips);
-            fillMatrix(&matrix, TAM_F);
-            i = -1;
-        } else if (option == 2)
-            matrix = createMatrix(TAM_M, &tips);
-        else {
-            matrix = createMatrix(TAM_D, &tips);
+            matrix = createMatrix(TAM_F);
+            tips(&tip, matrix, TAM_F);
+            gameInterface(tip, matrix, TAM_F);
+        } else if (option == 2){
+            matrix = createMatrix(TAM_M);
+            tips(&tip, matrix, TAM_M);
+            gameInterface(tip, matrix, TAM_M);
         }
+        else {
+            matrix = createMatrix(TAM_D);
+            tips(&tip, matrix, TAM_D);
+            gameInterface(tip, matrix, TAM_D);
+        }
+        i = -1;
     }
 }
 

@@ -42,25 +42,29 @@ void flush(){
 //O usuário escolhe qual será a opção de dificuldade
 int difficultyOptions(){
     int i=0;
-    char optionDifficulty;
+    char optionDifficulty[TAM_DIFFICULTY];
     clearDisplay();
-        printf("\n(x)Voltar\nDigite o nível de dificuldade (F - 3x3) (M - 5x5) (D - 7x7): ");
     while (i == 0){
-        scanf("%c", &optionDifficulty);
-        flush();
-        charDown(NULL , &optionDifficulty);
-        if (optionDifficulty == 'x')
+        printf("\n(x)Voltar\nDigite o nível de dificuldade (F - 3x3) (M - 5x5) (D - 7x7): ");
+        fgets(optionDifficulty, TAM_DIFFICULTY, stdin);
+        if (optionDifficulty[1] != '\n'){
+            flush();
+            clearDisplay();
+            printf("Erro: comando incompatível, tente novamente\n");
+            continue;
+        }
+        charDown(optionDifficulty, NULL);
+        if (optionDifficulty[0] == 'x')
             i = -1;
-        else if (optionDifficulty == 'f')
+        else if (optionDifficulty[0] == 'f')
             i = 1;
-        else if (optionDifficulty == 'm')
+        else if (optionDifficulty[0] == 'm')
             i = 2;
-        else if (optionDifficulty == 'd')
+        else if (optionDifficulty[0] == 'd')
             i = 3;
         else{
             clearDisplay();
             printf("Erro: comando incompatível, tente novamente\n");
-            printf("\n(x)Voltar\nDigite o nível de dificuldade (F - 3x3) (M - 5x5) (D - 7x7): ");
         }
     }
     return i;
@@ -89,7 +93,7 @@ void fillMatrix(Num **matrix, int tam){
                 if (matrix[i][j].sum == 1)
                     contador++;
             }
-            if (contador < (tam*tam)/2-1 || contador > (tam*tam)/2+1)
+        if (contador < (tam*tam)/2-1 || contador > (tam*tam)/2+1)
         contador = 0;
     } while (contador == 0);
 }
@@ -110,7 +114,7 @@ void tips(int **tip, Num **matrix, int tam){
         //printf("%d \n", (*tip)[i+tam]);
     }
 }
-
+/*
 //Mostra a interface do jogo
 void gameInterface(int tip[], Num **matrix, int tam){
     printf("\n    \u2503");
@@ -139,53 +143,106 @@ void gameInterface(int tip[], Num **matrix, int tam){
             printf("\u2501");
     }
     printf("\n    \u2503");
-    for (int i=0;i<tam;i++)
+    for (int i=0;i<tam;i++) 
         printf(" %2d  \u2503", tip[i+tam]);
     printf("\n");
+}*/
+void gameInterface(int tip[], Num **matrix, int tam){
+    int s=0;
+    //Cima
+    printf("\n\t     \u2503");
+    for (int i=0;i<tam;i++)
+        printf("  %d  \u2503", (i+1));
+    
+    //Meio
+    for (int i=0;i<tam;i++){
+        //Linhas horizontais das bordas
+        printf("\n\t\u2501\u2501\u2501\u2501\u2501");
+        for (int j=0;j<tam+1;j++)
+            printf("\u254b\u2501\u2501\u2501\u2501\u2501");
+        printf("\n");
+        
+        //Linhas horizontais dos numeros
+        printf("\t  %d  ", i+1);
+        for (int j=0;j<tam;j++){
+            printf("\u2503  ");
+            if (matrix[i][j].mark == 1)
+                printf(GREEN("%d"), matrix[i][j].number);
+            else if (matrix[i][j].mark == -1)
+                printf(RED("%d"), matrix[i][j].number);
+            else
+                printf("%d", matrix[i][j].number);
+            printf("  ");
+        }
+        printf("\u2503  ");
+        for (int j=0;j<tam;j++)
+            if (matrix[i][j].mark != -1)
+                s += matrix[i][j].number;
+        if (s == tip[i])
+            printf(BOLD("%d"), tip[i]);
+        else
+            printf("%d", tip[i]);
+        s = 0;
+    }
+    
+    //Ultima linha horizontal das bordas
+    printf("\n\t\u2501\u2501\u2501\u2501\u2501");
+        for (int j=0;j<tam+1;j++)
+            printf("\u254b\u2501\u2501\u2501\u2501\u2501");
+        printf("\n");
+    
+    //Dicas inferiores
+    printf("\t     \u2503");
+    for (int i=0;i<tam;i++){
+        printf("  ");
+        for (int j=0;j<tam;j++)
+            if (matrix[j][i].mark != -1)
+                s += matrix[j][i].number;
+        if (s == tip[tam+i])
+            printf(BOLD("%2d"), tip[tam+i]);
+        else
+            printf("%2d", tip[tam+i]);
+        s = 0;
+        printf(" \u2503");
+    }
 }
+
 
 //Todos os comandos possíveis na hora do jogo
 void gameControls(int tip[], Num **matrix, int tam){
     char command[TAM_COMMANDS_GAME];
     int x, y;
-    int contSum=0, contCorrect=0, contWrong=0;
+    int contSum=0, contCorrect=0, contMistakes=0;
     char *space;
     //Contador de números que fazer parte da soma
     for (int i=0;i<tam;i++)
         for (int j=0;j<tam;j++)
-            if (matrix[i][j].sum == 1){
+            if (matrix[i][j].sum == 1)
                 contSum++;
-                printf("SUM: %d\n", contSum);
-            }
+                
     while (1){
-        printf("ContCORRECT: %d\n", contCorrect);
-        printf("ContWRONG: %d\n", contWrong);
-        
-        //Conferindo todos os numeros que o jogador marcou certo e errado
+        //Conferindo todos os numeros certos marcados
         for (int i=0;i<tam;i++)
             for (int j=0;j<tam;j++)
-                if (matrix[i][j].sum == 1 && matrix[i][j].mark == 1){
+                if (matrix[i][j].sum == 1 && matrix[i][j].mark == 1)
                     contCorrect++;
-                    printf("ContCORRECT: %d\n", contCorrect);
-                }
-                else if (matrix[i][j].sum == 0 && matrix[i][j].mark == -1){
-                    contWrong++;
-                    printf("ContWRONG: %d\n", contWrong);
-                }
+                else if (matrix[i][j].sum == 0 && matrix[i][j].mark == 1)
+                    contMistakes++;
                 
         //Condição de vitória
-        if (contCorrect == contSum || contWrong == contSum){
+        if (contCorrect == contSum && contMistakes == 0){
             printf("Você venceu!!!\n");
             break;
         }
         else{
             contCorrect = 0;
-            contWrong = 0;
+            contMistakes = 0;
         }
         
         //Mostrando a interface e validando o comando do usuário
         gameInterface(tip, matrix, tam);
-        printf("\najuda - Ver comandos\n\nDigite o comando: ");
+        printf("\n\najuda - Ver comandos\n\nDigite o comando: ");
+        //Lê a entrada e organiza a string
         fgets(command, TAM_COMMANDS_GAME, stdin);
         if (strchr(command, '\n') == NULL)
             flush();
@@ -196,27 +253,27 @@ void gameControls(int tip[], Num **matrix, int tam){
             command[strlen(command)-1] = '\0';
         charDown(command, NULL);
         
-        if (strcmp(command, "remover") == 0){
+        //Validando os comandos
+        if (strcmp(command, "remover") == 0 && space != NULL){
             //
             if (*(space+1) <= tam+'0' && *(space+1) >= '1' && *(space+3) <= tam+'0' && *(space+3) >= '1' && *(space+2) == ' ' && *(space+4) == '\n'){
                 x = *(space+1) - '0';
                 y = *(space+3) - '0';
                 matrix[x-1][y-1].mark = -1;
                 clearDisplay();
-                printf("Numero: %d Marcaçao: %d\n", matrix[x-1][y-1].number, matrix[x-1][y-1].mark);
             }
             else{
                 clearDisplay();
                 printf("Error: Comando incompatível, digite ajuda caso precise ver os comandos\n");
             }
         }    
-        else if (strcmp(command, "adicionar") == 0){
+        else if (strcmp(command, "adicionar") == 0 && space != NULL){
+            printf("Pinto");
             if (*(space+1) <= tam+'0' && *(space+1) >= '1' && *(space+3) <= tam+'0' && *(space+3) >= '1' && *(space+2) == ' ' && *(space+4) == '\n'){
                 x = *(space+1) - '0';
                 y = *(space+3) - '0';
                 matrix[x-1][y-1].mark = 1;
                 clearDisplay();
-                printf("Numero: %d Marcaçao: %d\n", matrix[x-1][y-1].number, matrix[x-1][y-1].mark);
             }
             else{
                 clearDisplay();
@@ -253,38 +310,38 @@ void gameControls(int tip[], Num **matrix, int tam){
                     }
             }
         }
+        else{
+            clearDisplay();
+            printf("Error: Comando incompatível, digite ajuda caso precise ver os comandos\n");
+        }
     }
 }   
 //Cria um novo jogo, gerando, organizando e modificando a interface
 void newGame(){
-    int i = 0, option = difficultyOptions();
+    int option = difficultyOptions();
     Num **matrix;
     int *tip;
-    while (i == 0){
-        if (option == -1){
-            clearDisplay();
-            showCommands();
-        }
-        else if (option == 1){
-            matrix = createMatrix(TAM_F);
-            tips(&tip, matrix, TAM_F);
-            gameControls(tip, matrix, TAM_F);
-        }
-        else if (option == 2){
-            matrix = createMatrix(TAM_M);
-            tips(&tip, matrix, TAM_M);
-            gameControls(tip, matrix, TAM_M);
-        }
-        else if (option == 3){
-            matrix = createMatrix(TAM_D);
-            tips(&tip, matrix, TAM_D);
-            gameControls(tip, matrix, TAM_D);
-        }
-        else {
-            printf("Erro: Comando incompatível, tente novamente\n");
-            continue;
-        }
-        i = -1;
+    if (option == -1){
+        clearDisplay();
+        showCommands();
+    }
+    else if (option == 1){
+        matrix = createMatrix(TAM_F);
+        tips(&tip, matrix, TAM_F);
+        clearDisplay();
+        gameControls(tip, matrix, TAM_F);
+    }
+    else if (option == 2){
+        matrix = createMatrix(TAM_M);
+        tips(&tip, matrix, TAM_M);
+        clearDisplay();
+        gameControls(tip, matrix, TAM_M);
+    }
+    else if (option == 3){
+        matrix = createMatrix(TAM_D);
+        tips(&tip, matrix, TAM_D);
+        clearDisplay();
+        gameControls(tip, matrix, TAM_D);
     }
 }
 
@@ -294,6 +351,7 @@ void newGame(){
 void menuOptions(){
     int i=0;
     char option[TAM_COMMANDS];
+  //  char name[TAM_NAME];
     while (i == 0){
         fgets (option, TAM_COMMANDS, stdin);
         if (strchr(option, '\n') == NULL)
@@ -309,6 +367,7 @@ void menuOptions(){
         else if (strcmp (option, "sair") == 0)
             i = -1;
         else if (strcmp (option, "novo") == 0)
+            //fgets (name, TAM_NAME, stdin);
             newGame();
         else if (strcmp (option, "carregar") == 0);
         else if (strcmp (option, "ranking") == 0);

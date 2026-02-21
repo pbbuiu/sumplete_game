@@ -16,6 +16,15 @@ typedef struct {
 #include <time.h>
 
 //Define's
+#define ANSI_RESET            "\x1b[0m"
+#define ANSI_BOLD             "\x1b[1m"
+#define ANSI_COLOR_RED        "\x1b[31m"
+#define ANSI_COLOR_GREEN      "\x1b[32m"
+#define GREEN(string) ANSI_COLOR_GREEN string ANSI_RESET
+#define RED(string)   ANSI_COLOR_RED   string ANSI_RESET
+#define BOLD(string)  ANSI_BOLD        string ANSI_RESET
+#define TAM_DIFFICULTY 3
+#define TAM_NAME 20
 #define TAM_COMMANDS_GAME 16
 #define TAM_COMMANDS 10
 #define TAM_F 3

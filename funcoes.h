@@ -42,7 +42,7 @@ typedef struct {
 void menuOptions();
 void newGame();
 void gameControls(int tip[], Num **matrix, int tam, Time begin, Player gamer);
-void saveGame(Num **matrix, int tip[], int tam, char gameName[]);
+void saveGame(Num **matrix, int tip[], int tam, char gameName[], Player gamer);
 double calculateTime(Time begin, Time end);
 void freeMatrix(Num **matrix, int tip[], int tam);
 void gameInterface(int tip[], Num **matrix, int tam);

@@ -108,6 +108,8 @@ void fillMatrix(Num **matrix, int tam){
 //Cria as dicas com base nos numeros que estão na tabela
 void tips(int **tip, Num **matrix, int tam){
     *tip = malloc ((tam*2) * sizeof(int));
+    for (int i=0;i<tam*2;i++)
+        (*tip)[i] = 0;
     for (int i=0;i<tam;i++){
         for (int j=0;j<tam;j++)
             if (matrix[i][j].sum == 1)
@@ -174,7 +176,7 @@ void gameInterface(int tip[], Num **matrix, int tam){
             if (matrix[j][i].mark != -1)
                 s += matrix[j][i].number;
         if (s == tip[tam+i])
-            printf(BOLD("%2d"), tip[tam+i]);
+            printf(BOLD("%-2d"), tip[tam+i]);
         else
             printf("%-2d", tip[tam+i]);
         s = 0;
@@ -196,9 +198,50 @@ double calculateTime(Time begin, Time end){
 }
 
 //Salva o jogo em um arquivo com nome dado pelo usuario
-void saveGame(Num **matrix, int tip[], int tam, char gameName[]){
+void saveGame(Num **matrix, int tip[], int tam, char gameName[], Player gamer){
+    int contSum=0, contMark=0;
     FILE *arqMatrix = fopen(gameName, "w");
-    fprintf(arqMatrix, "Oi");
+    
+    //Tamanho
+    fprintf(arqMatrix, "%d\n", tam);
+    
+    //Números da matrix e quantidade de numeros que fazem parte da soma e também quantidade de numeros que estão marcados
+    for (int i=0;i<tam;i++){
+        for (int j=0;j<tam;j++){
+            fprintf(arqMatrix, "%d ", matrix[i][j].number);
+            if (matrix[i][j].sum == 1)
+                contSum++;
+            if (matrix[i][j].mark != 0)
+                contMark++;
+        }
+        fprintf(arqMatrix, "\n");
+    }
+    //Imprimindo quantidade de números que fazem parte da soma
+    fprintf(arqMatrix, "%d\n", contSum);
+    
+    //Posições dos números que fazem parte da soma
+    for (int i=0;i<tam;i++)
+        for (int j=0;j<tam;j++)
+            if (matrix[i][j].sum == 1)
+                fprintf(arqMatrix, "%d %d\n", i, j);
+    
+    //Imprimindo quantidade de numeros que estão marcados
+    fprintf(arqMatrix, "%d\n", contMark);
+    
+    //Posições dos números marcados
+    for (int i=0;i<tam;i++)
+        for (int j=0;j<tam;j++)
+            if (matrix[i][j].mark == 1)
+                fprintf(arqMatrix, "a %d %d\n", i, j);
+            else if(matrix[i][j].mark == -1)
+                fprintf(arqMatrix, "r %d %d\n", i, j);
+    
+    //Nome
+    fprintf(arqMatrix, "%s", gamer.name);
+    
+    //Tempo até o momento de save
+    fprintf(arqMatrix, "%d", gamer.totalTime);
+    fclose (arqMatrix);
 }
 //Todos os comandos possíveis na hora do jogo
 void gameControls(int tip[], Num **matrix, int tam, Time begin, Player gamer){
@@ -209,6 +252,7 @@ void gameControls(int tip[], Num **matrix, int tam, Time begin, Player gamer){
     int contSum=0, contCorrect=0, contWrong = 0, contMistakes=0;
     char *space;
     int valida=0;
+    int save=0;
     
     //Contador de números que fazem parte da soma
     for (int i=0;i<tam;i++)
@@ -229,6 +273,7 @@ void gameControls(int tip[], Num **matrix, int tam, Time begin, Player gamer){
             
         //Condição de vitória
         if ((contCorrect == contSum ||  contWrong == (tam*tam)-contSum) && contMistakes == 0){
+            freeMatrix(matrix, tip, tam);
             printf("Você venceu!!!\n");
             gettimeofday(&end, NULL);
             gamer.totalTime = (int)(end.tv_sec - begin.tv_sec);
@@ -264,6 +309,7 @@ void gameControls(int tip[], Num **matrix, int tam, Time begin, Player gamer){
                 y = *(space+3) - '0';
                 matrix[x-1][y-1].mark = -1;
                 clearDisplay();
+                save++;
             }
             else{
                 clearDisplay();
@@ -276,6 +322,7 @@ void gameControls(int tip[], Num **matrix, int tam, Time begin, Player gamer){
                 y = *(space+3) - '0';
                 matrix[x-1][y-1].mark = 1;
                 clearDisplay();
+                save++;
             }
             else{
                 clearDisplay();
@@ -287,6 +334,9 @@ void gameControls(int tip[], Num **matrix, int tam, Time begin, Player gamer){
             showCommands();
         }
         else if (strcmp(command, "sair") == 0){
+            if (save != 0){
+                printf("O");
+            }
             freeMatrix(matrix, tip, tam);
             clearDisplay();
             break;
@@ -312,6 +362,7 @@ void gameControls(int tip[], Num **matrix, int tam, Time begin, Player gamer){
                     }
                 }
             }
+            save++;
         }
         else if (strcmp(command, "salvar") == 0 && space != NULL){
             strcpy (gameName, space+1);
@@ -325,13 +376,14 @@ void gameControls(int tip[], Num **matrix, int tam, Time begin, Player gamer){
                     printf("Erro: Nome do arquivo curto demais\n");
                     continue;
                 }
-                else
+                else{
                     for (int i=0;i<strlen(gameName)-1;i++)
                         if ((gameName[i] >= 'a' && gameName[i] <= 'z') || (gameName[i] >= 'A' && gameName[i] <= 'Z') || (gameName[i] >= '0' && gameName[i] <= '9') || gameName[i] == '_');
                         else{
                             valida++;
                             break;
                         }
+                }
                 if (valida != 0){
                     clearDisplay();
                     printf("Erro: Não é possível o uso de caractéres especiais exceto _\n");
@@ -340,9 +392,10 @@ void gameControls(int tip[], Num **matrix, int tam, Time begin, Player gamer){
                     clearDisplay();
                     gettimeofday(&end, NULL);
                     gamer.totalTime = end.tv_sec - begin.tv_sec; 
-                    saveGame(matrix, tip, tam, gameName);
+                    saveGame(matrix, tip, tam, gameName, gamer);
                     printf("Jogo salvo com sucesso!\n");
                 }
+                valida = 0;
             }
         }
         else{
@@ -355,9 +408,21 @@ void gameControls(int tip[], Num **matrix, int tam, Time begin, Player gamer){
 void newGame(){
     Time begin;
     Player gamer;
-    int option = difficultyOptions();
+    int option;
     Num **matrix;
     int *tip;
+    while(1){
+        printf("Digite o nome do jogador: ");
+        fgets (gamer.name, TAM_NAME, stdin);
+        if (strchr(gamer.name, '\n') == NULL){
+            flush();
+            clearDisplay();
+            printf("Erro: O nome deve conter no máximo 20 caractéres\n\n");
+        }
+        else
+            break;
+    }
+    option = difficultyOptions();
     if (option == -1){
         clearDisplay();
     }
@@ -372,12 +437,14 @@ void newGame(){
         matrix = createMatrix(TAM_M);
         tips(&tip, matrix, TAM_M);
         clearDisplay();
+        gettimeofday(&begin, NULL);
         gameControls(tip, matrix, TAM_M, begin, gamer);
     }
     else if (option == 3){
         matrix = createMatrix(TAM_D);
         tips(&tip, matrix, TAM_D);
         clearDisplay();
+        gettimeofday(&begin, NULL);
         gameControls(tip, matrix, TAM_D, begin, gamer);
     }
 }

@@ -9,7 +9,7 @@ void showCommands(){
     printf("novo: Começar um novo jogo\n");
     printf("carregar: Carregar um jogo salvo em arquivo\n");
     printf("ranking: Exibir o ranking\n");
-    printf("salvar: Salva o jogo atual\n");
+    printf("salvar <name_file>: Salva o jogo atual\n");
     printf("dica: Marca uma posição no jogo\n");
     printf("resolver: Resolve o jogo atual\n");
     printf("adicionar <lin> <col>: adiciona a posição na soma\n");
@@ -47,8 +47,15 @@ int difficultyOptions(){
     while (i == 0){
         printf("\n(x)Voltar\nDigite o nível de dificuldade (F - 3x3) (M - 5x5) (D - 7x7): ");
         fgets(optionDifficulty, TAM_DIFFICULTY, stdin);
-        if (optionDifficulty[1] != '\n'){
-            flush();
+        if (optionDifficulty[0] != '\n'){
+            if (optionDifficulty[1] != '\n'){
+                flush();
+                clearDisplay();
+                printf("Erro: comando incompatível, tente novamente\n");
+                continue;
+            }
+        }
+        else{
             clearDisplay();
             printf("Erro: comando incompatível, tente novamente\n");
             continue;
@@ -114,39 +121,7 @@ void tips(int **tip, Num **matrix, int tam){
         //printf("%d \n", (*tip)[i+tam]);
     }
 }
-/*
-//Mostra a interface do jogo
-void gameInterface(int tip[], Num **matrix, int tam){
-    printf("\n    \u2503");
-    //Canto de cima
-    for (int i=0;i<tam;i++)
-        printf(" %2d  \u2503", (i+1));
 
-    //Meio
-    for (int i=0;i<tam;i++){
-        printf("\n");
-        printf("\u2501\u2501\u2501\u2501");
-        for (int j=0;j<tam+1;j++){
-            printf("\u254b");
-            for (int k=0;k<5;k++)
-                printf("\u2501");
-        }
-        printf("\n%2d  ", i+1);
-        for (int j=0;j<tam;j++)
-            printf("\u2503 %2d  ", matrix[i][j].number);
-        printf("\u2503 %2d", tip[i]);
-    }
-    printf("\n\u2501\u2501\u2501\u2501");
-    for (int j=0;j<tam+1;j++){
-        printf("\u254b");
-        for (int k=0;k<5;k++)
-            printf("\u2501");
-    }
-    printf("\n    \u2503");
-    for (int i=0;i<tam;i++) 
-        printf(" %2d  \u2503", tip[i+tam]);
-    printf("\n");
-}*/
 void gameInterface(int tip[], Num **matrix, int tam){
     int s=0;
     //Cima
@@ -201,20 +176,35 @@ void gameInterface(int tip[], Num **matrix, int tam){
         if (s == tip[tam+i])
             printf(BOLD("%2d"), tip[tam+i]);
         else
-            printf("%2d", tip[tam+i]);
+            printf("%-2d", tip[tam+i]);
         s = 0;
         printf(" \u2503");
     }
 }
 
+//Libera memória
+void freeMatrix(Num **matrix, int tip[], int tam){
+    for (int i=0;i<tam;i++)
+        free(matrix[i]);
+    free(matrix);
+    free(tip);
+}
 
+//Salva o jogo em um arquivo com nome dado pelo usuario
+void saveGame(Num **matrix, int tip[], char name[], int tam, char gameName[]){
+    FILE *arqMatrix = fopen(gameName, "w");
+    fprintf(arqMatrix, "Oi");
+}
 //Todos os comandos possíveis na hora do jogo
-void gameControls(int tip[], Num **matrix, int tam){
+void gameControls(int tip[], Num **matrix, int tam, char name[]){
+    char gameName[TAM_NAME];
     char command[TAM_COMMANDS_GAME];
     int x, y;
-    int contSum=0, contCorrect=0, contMistakes=0;
+    int contSum=0, contCorrect=0, contWrong = 0, contMistakes=0;
     char *space;
-    //Contador de números que fazer parte da soma
+    int valida=0;
+    
+    //Contador de números que fazem parte da soma
     for (int i=0;i<tam;i++)
         for (int j=0;j<tam;j++)
             if (matrix[i][j].sum == 1)
@@ -226,15 +216,18 @@ void gameControls(int tip[], Num **matrix, int tam){
             for (int j=0;j<tam;j++)
                 if (matrix[i][j].sum == 1 && matrix[i][j].mark == 1)
                     contCorrect++;
-                else if (matrix[i][j].sum == 0 && matrix[i][j].mark == 1)
+                else if (matrix[i][j].sum == 0 && matrix[i][j].mark == -1)
+                    contWrong++;
+                else
                     contMistakes++;
-                
+            
         //Condição de vitória
-        if (contCorrect == contSum && contMistakes == 0){
+        if ((contCorrect == contSum ||  contWrong == (tam*tam)-contSum) && contMistakes == 0){
             printf("Você venceu!!!\n");
             break;
         }
         else{
+            contWrong = 0;
             contCorrect = 0;
             contMistakes = 0;
         }
@@ -242,6 +235,7 @@ void gameControls(int tip[], Num **matrix, int tam){
         //Mostrando a interface e validando o comando do usuário
         gameInterface(tip, matrix, tam);
         printf("\n\najuda - Ver comandos\n\nDigite o comando: ");
+        
         //Lê a entrada e organiza a string
         fgets(command, TAM_COMMANDS_GAME, stdin);
         if (strchr(command, '\n') == NULL)
@@ -268,7 +262,6 @@ void gameControls(int tip[], Num **matrix, int tam){
             }
         }    
         else if (strcmp(command, "adicionar") == 0 && space != NULL){
-            printf("Pinto");
             if (*(space+1) <= tam+'0' && *(space+1) >= '1' && *(space+3) <= tam+'0' && *(space+3) >= '1' && *(space+2) == ' ' && *(space+4) == '\n'){
                 x = *(space+1) - '0';
                 y = *(space+3) - '0';
@@ -285,29 +278,60 @@ void gameControls(int tip[], Num **matrix, int tam){
             showCommands();
         }
         else if (strcmp(command, "sair") == 0){
+            freeMatrix(matrix, tip, tam);
             clearDisplay();
-            showCommands();
             break;
         }
         else if (strcmp(command, "dica") == 0){
+            srand(time(NULL));
+            x = rand() % tam;
+            y = rand() % tam;
             while(1){
-                srand(time(NULL));
-                x = rand() % tam;
-                y = rand() % tam;
-                if (matrix[x][y].sum == 1)
-                    if (matrix[x][y].mark == 1);
-                    else{
+                if (matrix[x][y].sum == 1 && matrix[x][y].mark != 1){
                         matrix[x][y].mark = 1;
                         clearDisplay();
                         break;
-                    }
+                }
                 else
-                    if (matrix[x][y].mark == -1);
-                    else{
-                       matrix[x][y].mark = -1;
-                       clearDisplay();
-                       break;
+                    y++;
+                if (y >= tam){
+                    x++;
+                    y = 0;
+                    if (x >= tam){
+                        x = 0;
+                        y = 0;
                     }
+                }
+            }
+        }
+        else if (strcmp(command, "salvar") == 0 && space != NULL){
+            strcpy (gameName, space+1);
+            if (strchr(gameName, '\n') == NULL){
+                clearDisplay();
+                printf("Erro: O nome do arquivo deve conter 20 caractéres no máximo\n");
+            }
+            else{
+                if (gameName[0] == '\n'){
+                    clearDisplay();
+                    printf("Erro: Nome do arquivo curto demais\n");
+                    continue;
+                }
+                else
+                    for (int i=0;i<strlen(gameName)-1;i++)
+                        if ((gameName[i] >= 'a' && gameName[i] <= 'z') || (gameName[i] >= 'A' && gameName[i] <= 'Z') || (gameName[i] >= '0' && gameName[i] <= '9') || gameName[i] == '_');
+                        else{
+                            valida++;
+                            break;
+                        }
+                if (valida != 0){
+                    clearDisplay();
+                    printf("Erro: Não é possível o uso de caractéres especiais exceto _\n");
+                }
+                else{
+                    clearDisplay();
+                    saveGame(matrix, tip, name, tam, gameName);
+                    printf("Jogo salvo com sucesso!\n");
+                }
             }
         }
         else{
@@ -317,31 +341,30 @@ void gameControls(int tip[], Num **matrix, int tam){
     }
 }   
 //Cria um novo jogo, gerando, organizando e modificando a interface
-void newGame(){
+void newGame(char name[]){
     int option = difficultyOptions();
     Num **matrix;
     int *tip;
     if (option == -1){
         clearDisplay();
-        showCommands();
     }
     else if (option == 1){
         matrix = createMatrix(TAM_F);
         tips(&tip, matrix, TAM_F);
         clearDisplay();
-        gameControls(tip, matrix, TAM_F);
+        gameControls(tip, matrix, TAM_F, name);
     }
     else if (option == 2){
         matrix = createMatrix(TAM_M);
         tips(&tip, matrix, TAM_M);
         clearDisplay();
-        gameControls(tip, matrix, TAM_M);
+        gameControls(tip, matrix, TAM_M, name);
     }
     else if (option == 3){
         matrix = createMatrix(TAM_D);
         tips(&tip, matrix, TAM_D);
         clearDisplay();
-        gameControls(tip, matrix, TAM_D);
+        gameControls(tip, matrix, TAM_D, name);
     }
 }
 
@@ -351,8 +374,9 @@ void newGame(){
 void menuOptions(){
     int i=0;
     char option[TAM_COMMANDS];
-  //  char name[TAM_NAME];
+    char name[TAM_NAME];
     while (i == 0){
+        showCommands();
         fgets (option, TAM_COMMANDS, stdin);
         if (strchr(option, '\n') == NULL)
             flush();
@@ -366,9 +390,21 @@ void menuOptions(){
         }
         else if (strcmp (option, "sair") == 0)
             i = -1;
-        else if (strcmp (option, "novo") == 0)
-            //fgets (name, TAM_NAME, stdin);
-            newGame();
+        else if (strcmp (option, "novo") == 0){
+            clearDisplay();
+            while(1){
+                printf("Digite o nome do jogador: ");
+                fgets (name, TAM_NAME, stdin);
+                if (strchr(name, '\n') == NULL){
+                    flush();
+                    clearDisplay();
+                    printf("Erro: O nome deve conter no máximo 20 caractéres\n\n");
+                }
+                else
+                    break;
+            }
+            newGame(name);
+        }
         else if (strcmp (option, "carregar") == 0);
         else if (strcmp (option, "ranking") == 0);
         else if (strcmp (option, "salvar") == 0)
@@ -381,9 +417,11 @@ void menuOptions(){
             printf("Só é possível utilizar esse comando em jogo\n");
         else if (strcmp (option, "remover") == 0)
             printf("Só é possível utilizar esse comando em jogo\n");
-        else
+        else{
+            clearDisplay();
             printf("Erro: comando incompatível, tente novamente\n");
         }
+    }
 }
 
 

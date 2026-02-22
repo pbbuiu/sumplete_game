@@ -6,9 +6,7 @@ int main(){
     
     //Chamadas de funções do menu
     clearDisplay();
-    showCommands();
     menuOptions();
-    
     printf("Obrigado por jogar!!\n");
     return 0;
 }

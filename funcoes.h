@@ -24,23 +24,27 @@ typedef struct {
 #define RED(string)   ANSI_COLOR_RED   string ANSI_RESET
 #define BOLD(string)  ANSI_BOLD        string ANSI_RESET
 #define TAM_DIFFICULTY 3
-#define TAM_NAME 20
-#define TAM_COMMANDS_GAME 16
+#define TAM_NAME 22
+#define TAM_COMMANDS_GAME 29
 #define TAM_COMMANDS 10
 #define TAM_F 3
 #define TAM_M 5
 #define TAM_D 7
 
 //Protótipos
-void gameControls(int tip[], Num **matrix, int tam);
-//void gameInterface(int tip[], Num **matrix, int tam);
+void menuOptions();
+void newGame(char name[]);
+void gameControls(int tip[], Num **matrix, int tam, char name[]);
+void saveGame(Num **matrix, int tip[], char name[], int tam, char gameName[]);
+void freeMatrix(Num **matrix, int tip[], int tam);
+void gameInterface(int tip[], Num **matrix, int tam);
 void tips(int **tip, Num **matrix, int tam);
 void fillMatrix(Num **matrix, int tam);
 Num **createMatrix(int optionDifficulty);
+int difficultyOptions();
+void flush();
 void charDown(char word[], char *c);
 void clearDisplay();
-void flush();
-void menuOptions();
 void showCommands();
 
 

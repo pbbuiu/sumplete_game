@@ -11,5 +11,15 @@ int main(){
     return 0;
 }
 /*
-
+while(1){
+                printf("Digite o nome do jogador: ");
+                fgets (name, TAM_NAME, stdin);
+                if (strchr(name, '\n') == NULL){
+                    flush();
+                    clearDisplay();
+                    printf("Erro: O nome deve conter no máximo 20 caractéres\n\n");
+                }
+                else
+                    break;
+            }
 */

@@ -2,18 +2,12 @@
 #ifndef FUNCOES_H //Proteção de chamada repetida
 #define FUNCOES_H
 
-//Struct's
-typedef struct {
-    int number;
-    int mark; //0: normal 1: adicionado -1: removido
-    int sum; //0: não faz parte 1: faz parte da soma 
-} Num;
-
 //Bibliotecas
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <time.h>
+#include <sys/time.h>
 
 //Define's
 #define ANSI_RESET            "\x1b[0m"
@@ -31,11 +25,25 @@ typedef struct {
 #define TAM_M 5
 #define TAM_D 7
 
+//Struct's
+typedef struct timeval Time;
+typedef struct {
+    int number;
+    int mark; //0: normal 1: adicionado -1: removido
+    int sum; //0: não faz parte 1: faz parte da soma 
+} Num;
+typedef struct {
+    char name[TAM_NAME];
+    int totalTime;
+} Player;
+
+
 //Protótipos
 void menuOptions();
-void newGame(char name[]);
-void gameControls(int tip[], Num **matrix, int tam, char name[]);
-void saveGame(Num **matrix, int tip[], char name[], int tam, char gameName[]);
+void newGame();
+void gameControls(int tip[], Num **matrix, int tam, Time begin, Player gamer);
+void saveGame(Num **matrix, int tip[], int tam, char gameName[]);
+double calculateTime(Time begin, Time end);
 void freeMatrix(Num **matrix, int tip[], int tam);
 void gameInterface(int tip[], Num **matrix, int tam);
 void tips(int **tip, Num **matrix, int tam);

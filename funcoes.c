@@ -190,13 +190,19 @@ void freeMatrix(Num **matrix, int tip[], int tam){
     free(tip);
 }
 
+//Retorna o cálculo do tempo
+double calculateTime(Time begin, Time end){
+    return end.tv_sec - begin.tv_sec;
+}
+
 //Salva o jogo em um arquivo com nome dado pelo usuario
-void saveGame(Num **matrix, int tip[], char name[], int tam, char gameName[]){
+void saveGame(Num **matrix, int tip[], int tam, char gameName[]){
     FILE *arqMatrix = fopen(gameName, "w");
     fprintf(arqMatrix, "Oi");
 }
 //Todos os comandos possíveis na hora do jogo
-void gameControls(int tip[], Num **matrix, int tam, char name[]){
+void gameControls(int tip[], Num **matrix, int tam, Time begin, Player gamer){
+    Time end;
     char gameName[TAM_NAME];
     char command[TAM_COMMANDS_GAME];
     int x, y;
@@ -218,12 +224,15 @@ void gameControls(int tip[], Num **matrix, int tam, char name[]){
                     contCorrect++;
                 else if (matrix[i][j].sum == 0 && matrix[i][j].mark == -1)
                     contWrong++;
-                else
+                else if (matrix[i][j].sum == 0 && matrix[i][j].mark == 1 || matrix[i][j].sum == 1 && matrix[i][j].mark == -1)
                     contMistakes++;
             
         //Condição de vitória
         if ((contCorrect == contSum ||  contWrong == (tam*tam)-contSum) && contMistakes == 0){
             printf("Você venceu!!!\n");
+            gettimeofday(&end, NULL);
+            gamer.totalTime = (int)(end.tv_sec - begin.tv_sec);
+            printf("Seu tempo foi: %d\n", gamer.totalTime);
             break;
         }
         else{
@@ -329,7 +338,9 @@ void gameControls(int tip[], Num **matrix, int tam, char name[]){
                 }
                 else{
                     clearDisplay();
-                    saveGame(matrix, tip, name, tam, gameName);
+                    gettimeofday(&end, NULL);
+                    gamer.totalTime = end.tv_sec - begin.tv_sec; 
+                    saveGame(matrix, tip, tam, gameName);
                     printf("Jogo salvo com sucesso!\n");
                 }
             }
@@ -341,7 +352,9 @@ void gameControls(int tip[], Num **matrix, int tam, char name[]){
     }
 }   
 //Cria um novo jogo, gerando, organizando e modificando a interface
-void newGame(char name[]){
+void newGame(){
+    Time begin;
+    Player gamer;
     int option = difficultyOptions();
     Num **matrix;
     int *tip;
@@ -352,19 +365,20 @@ void newGame(char name[]){
         matrix = createMatrix(TAM_F);
         tips(&tip, matrix, TAM_F);
         clearDisplay();
-        gameControls(tip, matrix, TAM_F, name);
+        gettimeofday(&begin, NULL);
+        gameControls(tip, matrix, TAM_F, begin, gamer);
     }
     else if (option == 2){
         matrix = createMatrix(TAM_M);
         tips(&tip, matrix, TAM_M);
         clearDisplay();
-        gameControls(tip, matrix, TAM_M, name);
+        gameControls(tip, matrix, TAM_M, begin, gamer);
     }
     else if (option == 3){
         matrix = createMatrix(TAM_D);
         tips(&tip, matrix, TAM_D);
         clearDisplay();
-        gameControls(tip, matrix, TAM_D, name);
+        gameControls(tip, matrix, TAM_D, begin, gamer);
     }
 }
 
@@ -374,7 +388,6 @@ void newGame(char name[]){
 void menuOptions(){
     int i=0;
     char option[TAM_COMMANDS];
-    char name[TAM_NAME];
     while (i == 0){
         showCommands();
         fgets (option, TAM_COMMANDS, stdin);
@@ -392,18 +405,7 @@ void menuOptions(){
             i = -1;
         else if (strcmp (option, "novo") == 0){
             clearDisplay();
-            while(1){
-                printf("Digite o nome do jogador: ");
-                fgets (name, TAM_NAME, stdin);
-                if (strchr(name, '\n') == NULL){
-                    flush();
-                    clearDisplay();
-                    printf("Erro: O nome deve conter no máximo 20 caractéres\n\n");
-                }
-                else
-                    break;
-            }
-            newGame(name);
+            newGame();
         }
         else if (strcmp (option, "carregar") == 0);
         else if (strcmp (option, "ranking") == 0);

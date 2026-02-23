@@ -18,6 +18,7 @@
 #define RED(string)   ANSI_COLOR_RED   string ANSI_RESET
 #define BOLD(string)  ANSI_BOLD        string ANSI_RESET
 #define TAM_DIFFICULTY 3
+#define TAM_OPTION 3
 #define TAM_NAME 22
 #define TAM_COMMANDS_GAME 29
 #define TAM_COMMANDS 10

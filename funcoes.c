@@ -199,8 +199,11 @@ double calculateTime(Time begin, Time end){
 
 //Salva o jogo em um arquivo com nome dado pelo usuario
 void saveGame(Num **matrix, int tip[], int tam, char gameName[], Player gamer){
+    char totalName[TAM_NAME+5];
+    strcpy (totalName, gameName);
+    strcat (totalName, ".sum");
     int contSum=0, contMark=0;
-    FILE *arqMatrix = fopen(gameName, "w");
+    FILE *arqMatrix = fopen(totalName, "w");
     
     //Tamanho
     fprintf(arqMatrix, "%d\n", tam);
@@ -243,6 +246,7 @@ void saveGame(Num **matrix, int tip[], int tam, char gameName[], Player gamer){
     fprintf(arqMatrix, "%d", gamer.totalTime);
     fclose (arqMatrix);
 }
+
 //Todos os comandos possíveis na hora do jogo
 void gameControls(int tip[], Num **matrix, int tam, Time begin, Player gamer){
     Time end;
@@ -253,6 +257,8 @@ void gameControls(int tip[], Num **matrix, int tam, Time begin, Player gamer){
     char *space;
     int valida=0;
     int save=0;
+    char saveOption[TAM_OPTION];
+    char next;
     
     //Contador de números que fazem parte da soma
     for (int i=0;i<tam;i++)
@@ -268,16 +274,20 @@ void gameControls(int tip[], Num **matrix, int tam, Time begin, Player gamer){
                     contCorrect++;
                 else if (matrix[i][j].sum == 0 && matrix[i][j].mark == -1)
                     contWrong++;
-                else if (matrix[i][j].sum == 0 && matrix[i][j].mark == 1 || matrix[i][j].sum == 1 && matrix[i][j].mark == -1)
+                else if ((matrix[i][j].sum == 0 && matrix[i][j].mark == 1) || (matrix[i][j].sum == 1 && matrix[i][j].mark == -1))
                     contMistakes++;
             
         //Condição de vitória
         if ((contCorrect == contSum ||  contWrong == (tam*tam)-contSum) && contMistakes == 0){
+            gameInterface(tip, matrix, tam);
             freeMatrix(matrix, tip, tam);
-            printf("Você venceu!!!\n");
+            printf("\n\nVocê venceu!!!\n");
             gettimeofday(&end, NULL);
             gamer.totalTime = (int)(end.tv_sec - begin.tv_sec);
-            printf("Seu tempo foi: %d\n", gamer.totalTime);
+            printf("\nSeu tempo foi: %d\n\n", gamer.totalTime);
+            printf("Pressione enter para continuar ");
+            scanf("%c", &next);
+            clearDisplay();
             break;
         }
         else{
@@ -334,12 +344,67 @@ void gameControls(int tip[], Num **matrix, int tam, Time begin, Player gamer){
             showCommands();
         }
         else if (strcmp(command, "sair") == 0){
+            gettimeofday(&end, NULL);
             if (save != 0){
-                printf("O");
+                while(1){
+                    printf("O jogo atual não foi salvo deseja salva-lo (S/n)? ");
+                    fgets(saveOption, TAM_OPTION, stdin);
+                    if ((saveOption[0] == 's' || saveOption[0] == 'S' || saveOption[0] == 'N' || saveOption[0] == 'n') && strlen(saveOption) == TAM_OPTION-1){
+                        saveOption[strlen(saveOption)-1] = '\0';
+                        charDown(saveOption, NULL);
+                        break;
+                    }
+                    else{
+                        printf("Erro: comando incompatível, tente novamente\n");
+                        continue;
+                    }
+                }
             }
-            freeMatrix(matrix, tip, tam);
-            clearDisplay();
-            break;
+            else {
+                freeMatrix(matrix, tip, tam);
+                clearDisplay();
+                break;
+            }
+            if (strcmp(saveOption, "s") == 0){
+                while(1){
+                    printf("Digite o nome do arquivo: ");
+                    fgets(gameName, TAM_NAME, stdin);
+                    if (strchr(gameName, '\n') == NULL){
+                        printf("Erro: O nome do arquivo deve conter 20 caractéres no máximo\n");
+                        flush();
+                        continue;
+                    }
+                    else if (gameName[0] == '\n'){
+                            printf("Erro: Nome do arquivo curto demais\n");
+                            continue;
+                    }
+                    else{
+                        for (int i=0;i<strlen(gameName)-1;i++)
+                            if ((gameName[i] >= 'a' && gameName[i] <= 'z') || (gameName[i] >= 'A' && gameName[i] <= 'Z') || (gameName[i] >= '0' && gameName[i] <= '9') || gameName[i] == '_');
+                            else{
+                                valida++;
+                                break;
+                            }
+                    }
+                    if (valida != 0)
+                        printf("Erro: Não é possível o uso de caractéres especiais exceto _\n");
+                    else
+                        break;
+                }
+                gameName[strlen(gameName)-1] = '\0';
+                clearDisplay();
+                gamer.totalTime = end.tv_sec - begin.tv_sec; 
+                saveGame(matrix, tip, tam, gameName, gamer);
+                printf("Jogo salvo com sucesso!\n");
+                freeMatrix(matrix, tip, tam);
+                break;
+                valida = 0;
+            }
+            else{
+                freeMatrix(matrix, tip, tam);
+                clearDisplay();
+                break;
+            }
         }
         else if (strcmp(command, "dica") == 0){
             srand(time(NULL));
@@ -374,7 +439,6 @@ void gameControls(int tip[], Num **matrix, int tam, Time begin, Player gamer){
                 if (gameName[0] == '\n'){
                     clearDisplay();
                     printf("Erro: Nome do arquivo curto demais\n");
-                    continue;
                 }
                 else{
                     for (int i=0;i<strlen(gameName)-1;i++)
@@ -389,16 +453,27 @@ void gameControls(int tip[], Num **matrix, int tam, Time begin, Player gamer){
                     printf("Erro: Não é possível o uso de caractéres especiais exceto _\n");
                 }
                 else{
+                    gameName[strlen(gameName)-1] = '\0';
                     clearDisplay();
                     gettimeofday(&end, NULL);
                     gamer.totalTime = end.tv_sec - begin.tv_sec; 
                     saveGame(matrix, tip, tam, gameName, gamer);
                     printf("Jogo salvo com sucesso!\n");
+                    save = 0;
                 }
                 valida = 0;
             }
         }
-        else{
+        else if (strcmp(command, "resolver") == 0){
+            clearDisplay();
+            for (int i=0;i<tam;i++)
+                for (int j=0;j<tam;j++)
+                    if (matrix[i][j].sum == 1)
+                        matrix[i][j].mark = 1;
+                    else
+                        matrix[i][j].mark = -1;
+        }
+        else {
             clearDisplay();
             printf("Error: Comando incompatível, digite ajuda caso precise ver os comandos\n");
         }
@@ -465,7 +540,6 @@ void menuOptions(){
         charDown(option, NULL);
         if (strcmp (option, "ajuda") == 0){
             clearDisplay();
-            showCommands();
             continue;
         }
         else if (strcmp (option, "sair") == 0)
@@ -476,19 +550,30 @@ void menuOptions(){
         }
         else if (strcmp (option, "carregar") == 0);
         else if (strcmp (option, "ranking") == 0);
-        else if (strcmp (option, "salvar") == 0)
+        else if (strcmp (option, "salvar") == 0){
             printf("Só é possível utilizar esse comando em jogo\n");
-        else if (strcmp (option, "dica") == 0)
+            clearDisplay();
+        }
+        else if (strcmp (option, "dica") == 0){
             printf("Só é possível utilizar esse comando em jogo\n");
-        else if (strcmp (option, "resolver") == 0)
+            clearDisplay();
+        }
+        else if (strcmp (option, "resolver") == 0){
             printf("Só é possível utilizar esse comando em jogo\n");
-        else if (strcmp (option, "adicionar") == 0)
+            clearDisplay();
+        }
+        else if (strcmp (option, "adicionar") == 0){
             printf("Só é possível utilizar esse comando em jogo\n");
-        else if (strcmp (option, "remover") == 0)
+            clearDisplay();
+        }
+        else if (strcmp (option, "remover") == 0){
             printf("Só é possível utilizar esse comando em jogo\n");
+            clearDisplay();
+        }
         else{
             clearDisplay();
             printf("Erro: comando incompatível, tente novamente\n");
+            
         }
     }
 }

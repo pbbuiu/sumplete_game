@@ -19,7 +19,8 @@
 #define BOLD(string)  ANSI_BOLD        string ANSI_RESET
 #define TAM_DIFFICULTY 3
 #define TAM_OPTION 3
-#define TAM_NAME 22
+#define TAM_RANK 10
+#define TAM_NAME 27
 #define TAM_COMMANDS_GAME 29
 #define TAM_COMMANDS 10
 #define TAM_F 3
@@ -37,19 +38,26 @@ typedef struct {
     char name[TAM_NAME];
     int totalTime;
 } Player;
+typedef struct {
+    char nameRank[TAM_NAME];
+    int timeRank;
+} Rank;
 
 
 //Protótipos
 void menuOptions();
-void newGame();
+int loadGame(Num ***matrix, int **tip, int *tam, Player *gamer);
+void newGame(int load);
 void gameControls(int tip[], Num **matrix, int tam, Time begin, Player gamer);
-void saveGame(Num **matrix, int tip[], int tam, char gameName[], Player gamer);
+void addRanking(Player gamer);
+void showRanking();
+void saveGame(Num **matrix, int tam, int tip[], char gameName[], Player gamer);
 double calculateTime(Time begin, Time end);
 void freeMatrix(Num **matrix, int tip[], int tam);
 void gameInterface(int tip[], Num **matrix, int tam);
 void tips(int **tip, Num **matrix, int tam);
 void fillMatrix(Num **matrix, int tam);
-Num **createMatrix(int optionDifficulty);
+Num **createMatrix(int optionDifficulty, int load);
 int difficultyOptions();
 void flush();
 void charDown(char word[], char *c);

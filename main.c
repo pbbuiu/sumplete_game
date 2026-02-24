@@ -2,10 +2,8 @@
 #include "funcoes.h"
 
 int main(){
-    printf("Boas Vindas ao SUMPLETE_GAME!!\n\n");
-    
-    //Chamadas de funções do menu
     clearDisplay();
+    printf("Boas Vindas ao SUMPLETE_GAME!!\n\n");
     menuOptions();
     printf("Obrigado por jogar!!\n");
     return 0;
